@@ -82,9 +82,9 @@ class nsqphp
     /**
      * Connection pool for publishing
      * 
-     * @var Connection\ConnectionPool|NULL
+     * @var Connection\ConnectionManager|NULL
      */
-    private $pubConnectionPool;
+    private $connectManager;
     
     /**
      * Publish success criteria (how many nodes need to respond)
@@ -225,19 +225,19 @@ class nsqphp
      */
     public function publishTo($hosts, $cl = NULL)
     {
-        $this->pubConnectionPool = new Connection\ConnectionPool;
+        $this->connectManager = Connection\ConnectionManager::getInstance();
 
         if (!is_array($hosts)) {
             $hosts = explode(',', $hosts);
         }
-        $cm = Connection\ConnectionManager::getInstance();
+
         foreach ($hosts as $h) {
             if (strpos($h, ':') === FALSE) {
                 $h .= ':4150';
             }
             
             $parts = explode(':', $h);
-            $conn = $cm->find($h);
+            $conn = $this->connectManager->find($h);
             if (!$conn) {
                 $conn = new Connection\Connection(
                     $parts[0],
@@ -248,7 +248,7 @@ class nsqphp
                     FALSE,      // blocking
                     array($this, 'connectionCallback')
                 );
-                $cm->add($conn);
+                $this->connectManager->add($conn);
             }
         }
         
@@ -256,20 +256,22 @@ class nsqphp
         if ($cl === NULL) {
             $cl = self::PUB_ONE;
         }
+
         switch ($cl) {
             case self::PUB_ONE:
             case self::PUB_TWO:
                 $this->pubSuccessCount = $cl;
                 break;
             case self::PUB_QUORUM:
-                $this->pubSuccessCount = ceil($this->pubConnectionPool->count() / 2) + 1;
+                $this->pubSuccessCount = ceil($this->connectManager->count() / 2) + 1;
                 break;
             default:
                 throw new \InvalidArgumentException('Invalid consistency level');
                 break;
         }
-        if ($this->pubSuccessCount > $this->pubConnectionPool->count()) {
-            throw new \InvalidArgumentException(sprintf('Cannot achieve desired consistency level with %s nodes', $this->pubConnectionPool->count()));
+
+        if ($this->pubSuccessCount > $this->connectManager->count()) {
+            throw new \InvalidArgumentException(sprintf('Cannot achieve desired consistency level with %s nodes', $this->connectManager->count()));
         }
 
         return $this;
@@ -289,11 +291,11 @@ class nsqphp
     public function publish($topic, MessageInterface $msg)
     {
         // pick a random
-        $this->pubConnectionPool->shuffle();
+        $this->connectManager->shuffle();
         
         $success = 0;
         $errors = array();
-        foreach ($this->pubConnectionPool as $conn) {
+        foreach ($this->connectManager as $conn) {
             /** @var $conn ConnectionInterface */
             try {
                 $this->tryFunc(function (ConnectionInterface $conn) use ($topic, $msg, &$success, &$errors) {
