@@ -7,9 +7,9 @@
  * php test-sub.php bar
  */
 
-include __DIR__ . '/../bootstrap.php';
+include __DIR__ . '/../vendor/autoload.php';
 
-$logger = new nsqphp\Logger\Stderr;
+$logger = new Monolog\Logger("nsq");
 $dedupe = new nsqphp\Dedupe\OppositeOfBloomFilterMemcached;
 $lookup = new nsqphp\Lookup\FixedHosts('localhost:4150');
 $requeueStrategy = new nsqphp\RequeueStrategy\FixedDelay;

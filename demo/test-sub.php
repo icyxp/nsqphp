@@ -8,11 +8,11 @@
  * php test-io.php bar nsq1,nsq2
  */
 
-include __DIR__ . '/../bootstrap.php';
+include __DIR__ . '/../vendor/autoload.php';
 
 $hosts = isset($argv[2]) ? $argv[2] : 'localhost';
 
-$logger = new nsqphp\Logger\Stderr;
+$logger = new Monolog\Logger("nsq");
 $dedupe = new nsqphp\Dedupe\OppositeOfBloomFilterMemcached;
 $lookup = new nsqphp\Lookup\Nsqlookupd($hosts);
 $requeueStrategy = new nsqphp\RequeueStrategy\FixedDelay;

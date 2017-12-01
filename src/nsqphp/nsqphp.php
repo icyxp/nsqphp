@@ -3,16 +3,16 @@
 namespace nsqphp;
 
 use nsqphp\Exception\SocketException;
-use React\EventLoop\LoopInterface;
-use React\EventLoop\Factory as ELFactory;
-
-use nsqphp\Logger\LoggerInterface;
 use nsqphp\Lookup\LookupInterface;
 use nsqphp\Connection\ConnectionInterface;
 use nsqphp\Dedupe\DedupeInterface;
 use nsqphp\RequeueStrategy\RequeueStrategyInterface;
 use nsqphp\Message\MessageInterface;
 use nsqphp\Message\Message;
+
+use React\EventLoop\LoopInterface;
+use React\EventLoop\Factory as ELFactory;
+use Monolog\Logger;
 
 class nsqphp
 {
@@ -47,7 +47,7 @@ class nsqphp
     /**
      * Logger, if any enabled
      * 
-     * @var LoggerInterface|NULL
+     * @var Logger|NULL
      */
     private $logger;
     
@@ -137,13 +137,13 @@ class nsqphp
      * @param RequeueStrategyInterface|NULL $requeueStrategy Our strategy
      *      for dealing with failures whilst processing SUBbed messages via
      *      callback - if any (optional)
-       @param LoggerInterface|NULL $logger Logging service (optional)
+       @param Logger|NULL $logger Logging service (optional)
      */
     public function __construct(
             LookupInterface $nsLookup = NULL,
             DedupeInterface $dedupe = NULL,
             RequeueStrategyInterface $requeueStrategy = NULL,
-            LoggerInterface $logger = NULL,
+            Logger $logger = NULL,
             $connectionTimeout = 3,
             $readWriteTimeout = 3,
             $readWaitTimeout = 15

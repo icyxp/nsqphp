@@ -10,7 +10,7 @@
  * php test-pub.php 100 nsq1,nsq2 1
  */
 
-include __DIR__ . '/../bootstrap.php';
+include __DIR__ . '/../vendor/autoload.php';
 
 $n = isset($argv[1]) ? (int)$argv[1] : 10;
 $hosts = isset($argv[2]) ? explode(',',$argv[2]) : array('localhost');

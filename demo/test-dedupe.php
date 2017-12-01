@@ -10,7 +10,7 @@
  * additional entry is 1/N. After 2, = 1/N + (N-1/N * 1/N). 
  */
 
-include __DIR__ . '/../bootstrap.php';
+include __DIR__ . '/../vendor/autoload.php';
 
 $obf = new nsqphp\Dedupe\OppositeOfBloomFilterMemcached;
 
