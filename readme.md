@@ -39,21 +39,20 @@ following to your composer.json.
         ...
         "require": {
             ...
-            "davegardnerisme/nsqphp": "dev-master"
+            "icyboy/nsqphp": "dev-master"
         }
         ...
     }
 
 You can also simply clone it into your project:
 
-    git clone git://github.com/davegardnerisme/nsqphp.git
+    git clone git://github.com/icyxp/nsqphp.git
     cd nsqphp
     git submodule update --init --recursive
 
-To use `nsqphp` in your projects, just include the `bootstrap.php` file, or
-setup autoloading via composer. The design lends itself to a dependency injection
-container (all dependencies are constructor injected), although you can just
-setup the dependencies manually when you use it.
+To use `nsqphp` in your projects, just include the `bootstrap.php` file, or setup autoloading via composer. The design lends itself to a dependency injection container (all dependencies are constructor injected), although you can just setup the dependencies manually when you use it.
+
+
 
 ### Testing it out
 
@@ -62,11 +61,11 @@ to install nsq on localhost.
 
 Publish some events:
 
-    php cruft/test-pub.php 10
+    php demo/test-pub.php 10
 
 Fire up a subscriber in one shell:
 
-    php cruft/test-sub.php mychannel > /tmp/processed-messages
+    php demo/test-sub.php mychannel > /tmp/processed-messages
 
 Then tail the redirected STDOUT in another shell, so you can see the messages
 received and processed:
@@ -93,12 +92,12 @@ So each message in a `topic` will be delivered to each `channel`.
 
 Fire up two subscribers with different channels (one in each shell):
 
-    php cruft/test-sub.php mychannel
-    php cruft/test-sub.php otherchannel
+    php demo/test-sub.php mychannel
+    php demo/test-sub.php otherchannel
 
 Publish some messages:
 
-    php cruft/test-pub.php 10
+    php demo/test-pub.php 10
 
 Each message will be delivered to each channel. It's also worth noting that
 the API allows you to subscribe to multiple topics/channels within the same
@@ -110,12 +109,12 @@ process.
 Setup a bunch of servers running `nsqd` and `nsqlookupd` with hostnames
 `nsq1`, `nsq2` ... Now publish a bunch of messages to both:
 
-    php cruft/test-pub.php 10 nsq1
-    php cruft/test-pub.php 10 nsq2
+    php demo/test-pub.php 10 nsq1
+    php demo/test-pub.php 10 nsq2
 
 Now subscribe:
 
-    php cruft/test-sub.php mychannel > /tmp/processed-messages
+    php demo/test-sub.php mychannel > /tmp/processed-messages
 
 You will receive 20 messages.
 
@@ -125,8 +124,8 @@ You will receive 20 messages.
 Same test as before, but this time we deliver the _same message_ to two `nsqd`
 instances and then de-duplicate on subscribe.
 
-    php cruft/test-pub.php 10 nsq1,nsq2
-    php cruft/test-sub.php mychannel > /tmp/processed-messages
+    php demo/test-pub.php 10 nsq1,nsq2
+    php demo/test-sub.php mychannel > /tmp/processed-messages
 
 This time you should receive **only 10 messages**.
 
@@ -338,7 +337,7 @@ file:
     $dedupe = new nsqphp\Dedupe\OppositeOfBloomFilterMemcached;
     $lookup = new nsqphp\Lookup\Nsqlookupd;
     $logger = new nsqphp\Logger\Stderr;
-    $nsq = new nsqphp\nsqphp($lookup, $dedupe, $requeueStrategy, logger);
+    $nsq = new nsqphp\nsqphp($lookup, $dedupe, $requeueStrategy, $logger);
     $nsq->subscribe('mytopic', 'somechannel', 'msgCallback')
         ->run();
 
@@ -347,6 +346,7 @@ file:
         if (rand(1,3) == 1) {
             throw new \Exception('Argh, something bad happened');
         }
+        
         echo $msg->getId() . "\n";
     }
 ```

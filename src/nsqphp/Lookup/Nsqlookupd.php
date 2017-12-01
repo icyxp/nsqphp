@@ -96,8 +96,8 @@ class Nsqlookupd implements LookupInterface
                         "Error talking to nsqlookupd via $url"
                         );
             }*/
-            
-            $producers = isset($r['data'], $r['data']['producers']) ? $r['data']['producers'] : array();
+
+            $producers = isset($r['producers']) ? $r['producers'] : array();
             foreach ($producers as $prod) {
                 if (isset($prod['address'])) {
                     $address = $prod['address'];
