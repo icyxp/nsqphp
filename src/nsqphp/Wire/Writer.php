@@ -140,5 +140,15 @@ class Writer
             $outStr .= pack("c", ord(substr($str, $i, 1))); 
         } 
         return $outStr; 
-    } 
+    }
+
+    public function identify(array $config)
+    {
+        $message = json_encode($config);
+
+        $cmd = "IDENTIFY\n";
+        $size = pack('N', strlen($message));
+
+        return $cmd . $size . $message;
+    }
 }

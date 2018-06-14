@@ -344,7 +344,7 @@ class nsqphp
             throw $lastException;
         }
     }
-    
+
     /**
      * Subscribe to topic/channel
      *
@@ -352,16 +352,16 @@ class nsqphp
      * @param string $channel Our channel name: [.a-zA-Z0-9_-] and 1 < length < 32
      *      "In practice, a channel maps to a downstream service consuming a topic."
      * @param callable $callback A callback that will be executed with a single
-     *      parameter of the message object dequeued. Simply return TRUE to 
+     *      parameter of the message object dequeued. Simply return TRUE to
      *      mark the message as finished or throw an exception to cause a
      *      backed-off requeue
-     * 
+     * @param array $params
      * @throws \RuntimeException If we don't have a valid callback
      * @throws \InvalidArgumentException If we don't have a valid callback
-     * 
+     *
      * @return nsqphp This instance of call chaining
      */
-    public function subscribe($topic, $channel, $callback)
+    public function subscribe($topic, $channel, $callback, $params = array())
     {
         if ($this->nsLookup === NULL) {
             throw new \RuntimeException(
@@ -396,13 +396,19 @@ class nsqphp
                 $this->logger->info("Connecting to {$host} and saying hello");
             }
             $conn->write($this->writer->magic());
+
+            if (!empty($params)) {
+                $conn->write($this->writer->identify((array)$params));
+            }
+
+
             $this->subConnectionPool->add($conn);
             $socket = $conn->getSocket();
             $nsq = $this;
             $this->loop->addReadStream($socket, function ($socket) use ($nsq, $callback, $topic, $channel) {
                 $nsq->readAndDispatchMessage($socket, $topic, $channel, $callback);
             });
-            
+
             // subscribe
             $conn->write($this->writer->subscribe($topic, $channel, $this->shortId, $this->longId));
             $conn->write($this->writer->ready(1));
